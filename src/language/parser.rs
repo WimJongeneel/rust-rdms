@@ -1,11 +1,11 @@
 use std::collections::LinkedList;
 
-use super::lexer::Token;
-use super::lexer::TypeToken;
-use super::ast::CreateTableAST;
-use super::ast::TableProperty;
-use super::ast::Type;
-use super::ast::AST;
+use super::Token;
+use super::TypeToken;
+use super::CreateTableAST;
+use super::TableProperty;
+use super::Type;
+use super::AST;
 
 pub fn parse(ts: Vec<Token>) -> Result<AST, String> {
     return match &ts[0] {
