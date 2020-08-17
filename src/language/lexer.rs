@@ -9,8 +9,12 @@ pub enum Token {
     Type(TypeToken),
     Comma,
     Non,
-    Null
-}
+    Null,
+    Insert,
+    Into,
+    Values,
+    Literal(Literal)
+}   
 
 #[derive(Debug)]
 #[derive(PartialEq)]
@@ -20,7 +24,17 @@ pub enum TypeToken {
     Bool
 }
 
+#[derive(Debug)]
+#[derive(PartialEq)]
+pub enum Literal {
+    Int(i32),
+    Bool(bool),
+    String(String)
+    // todo: null literal
+}
+
 pub fn lex (s: String) -> Vec<Token> {
+    // todo: string parsing with ignoring of tokens in the string
     let mut tokens: Vec<Token> = Vec::new();
     let mut current: String = String::new();
 
@@ -59,6 +73,11 @@ pub fn lex (s: String) -> Vec<Token> {
                 tokens.push(string_to_token(current));
                 current = String::new();
             },
+            '\r' if current == "" => {}
+            '\r'                  => {
+                tokens.push(string_to_token(current));
+                current = String::new();
+            },
             ';' if current == ""  => {}
             ';'                   => {
                 tokens.push(string_to_token(current));
@@ -73,13 +92,21 @@ pub fn lex (s: String) -> Vec<Token> {
 
 fn string_to_token(s: String) -> Token {
     return match &s[..] {
-        "CREATE" => Token::Create,
-        "TABLE" => Token::Table,
-        "INT" => Token::Type(TypeToken::Int),
-        "STRING" => Token::Type(TypeToken::String),
-        "BOOL" => Token::Type(TypeToken::Bool),
-        "NON" => Token::Non,
-        "NULL" => Token::Null,
-        _ => Token::Id(s)
+        "CREATE"    => Token::Create,
+        "TABLE"     => Token::Table,
+        "INT"       => Token::Type(TypeToken::Int),
+        "STRING"    => Token::Type(TypeToken::String),
+        "BOOL"      => Token::Type(TypeToken::Bool),
+        "NON"       => Token::Non,
+        "NULL"      => Token::Null,
+        "TRUE"      => Token::Literal(Literal::Bool(true)),
+        "FALSE"     => Token::Literal(Literal::Bool(false)),
+        "INSERT"    => Token::Insert,
+        "INTO"      => Token::Into,
+        "VALUES"    => Token::Values,
+        _           => match s.parse::<i32>() {
+            Ok(i) => Token::Literal(Literal::Int(i)),
+            Err(_) => Token::Id(s)
+        }
     };
 }

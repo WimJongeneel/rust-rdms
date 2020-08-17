@@ -1,9 +1,17 @@
+use crate::language::lexer::Literal;
+
 #[derive(Debug, PartialEq)]
 pub struct CreateTableAST {
     pub name: String,
     pub props: Vec<TableProperty>,
     pub pk: Option<String>,
     pub if_exists: bool
+}
+
+#[derive(Debug, PartialEq)]
+pub struct InsertAST {
+    pub table: String,
+    pub values: Vec<Literal>
 }
 
 #[derive(Debug,PartialEq)]
@@ -22,5 +30,6 @@ pub enum Type {
 
 #[derive(Debug, PartialEq)]
 pub enum AST {
-    CreateTable(CreateTableAST)
+    CreateTable(CreateTableAST),
+    Insert(InsertAST)
 }

@@ -1,3 +1,6 @@
+use crate::language::ast::InsertAST;
+use crate::language::ast::AST::Insert;
+use crate::language::lexer::Literal;
 use std::collections::LinkedList;
 
 use super::Token;
@@ -10,6 +13,7 @@ use super::AST;
 pub fn parse(ts: Vec<Token>) -> Result<AST, String> {
     return match &ts[0] {
         Token::Create => parse_create(ts),
+        Token::Insert => parse_insert(ts),
         t             => Err(String::from("Unexpected keyword") + &token_to_string1(t))
     }
 }
@@ -111,7 +115,11 @@ fn token_to_string1(t: &Token) -> String {
         Token::Comma => String::from(","),
         Token::Non => String::from("NON"),
         Token::Null => String::from("NULL"),
-        Token::Type(tt) => String::from("TYPE(") + &type_to_string1(tt) + &")" 
+        Token::Type(tt) => String::from("TYPE(") + &type_to_string1(tt) + &")" ,
+        Token::Insert => String::from("INSERT"),
+        Token::Values => String::from("VALUES"),
+        Token::Literal(_) => String::from("LITERAL"),
+        Token::Into => String::from("INTO"),
     }
 }
 
@@ -138,4 +146,53 @@ fn tokens_to_tableproperty (tokens: Vec<Token>) -> Result<TableProperty, String>
     } else { false };
     
     return Ok(TableProperty { name: name, _type: _type, nullable: nullable })
+}
+
+fn parse_insert(_ts: Vec<Token>) -> Result<AST, String> {
+    let mut ts: LinkedList<Token> = LinkedList::new();
+
+    for t in _ts {
+        ts.push_back(t);
+    }
+
+    match ts.pop_front() {
+        Some(Token::Insert) => Ok(()),
+        _                   => Err(String::from("Expected Insert keyword"))
+    }?;
+
+    match ts.pop_front() {
+        Some(Token::Into) => Ok(()),
+        _                 => Err(String::from("Expected Into keyword"))
+    }?;
+
+    let table = match ts.pop_front() {
+        Some(Token::Id(t)) => Ok(t),
+        _                  => Err(String::from("Expected Id keyword"))
+    }?;
+
+    match ts.pop_front() {
+        Some(Token::Values) => Ok(()),
+        _                 => Err(String::from("Expected Values keyword"))
+    }?;
+
+    match ts.pop_front() {
+        Some(Token::Lpr) => Ok(()),
+        _                 => Err(String::from("Expected Lpr keyword"))
+    }?;
+
+    let mut values: Vec<Literal> = Vec::new();
+
+    for t in ts {
+        match t {
+            Token::Literal(l) => values.push(l),
+            // todo: check if proper seperated
+            Token::Comma => {}
+            // todo: check if proper closed
+            Token::Rpr => {},
+            _ => return Err(String::from("Expected Literal"))
+        }
+    }
+
+    return Ok(AST::Insert(InsertAST { table: table, values: values }));
+
 }
