@@ -118,14 +118,19 @@ fn token_to_string1(t: &Token) -> String {
 
 fn tokens_to_tableproperty (tokens: Vec<Token>) -> Result<TableProperty, String> {
     // let tokens = &_tokens
-    let name = match &tokens[0] { Token::Id(n) => String::from(n), _ => String::new() };
+    let name = match &tokens[0] { 
+        Token::Id(n) => Ok(String::from(n)), 
+        t            => Err(String::from("Unexpected token, expected Id: ") + &token_to_string1(t)) 
+    }?;
+
     let _type = match &tokens[1] { 
         Token::Type(TypeToken::Bool)    => Ok(Type::Bool),
         Token::Type(TypeToken::Int)     => Ok(Type::Int),
         Token::Type(TypeToken::String)  => Ok(Type::String),
-        t                               => Err(String::from("Unexpected token, expected Id: ") + &token_to_string1(t)),
+        t                               => Err(String::from("Unexpected token, expected Type: ") + &token_to_string1(t)),
 
     }?;
+
     let nullable = if tokens.len() == 4 {
         if tokens[2] == Token::Non && tokens[3] == Token::Null {
            true
